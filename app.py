@@ -7,7 +7,7 @@ from groq import Groq
 
 load_dotenv()
 
-MODEL = "llama-3.3-70b-versatile"
+MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
 
 GOALS = ["Build muscle", "Lose fat", "General fitness", "Improve endurance"]
 LEVELS = ["Beginner", "Intermediate", "Advanced"]
@@ -71,7 +71,7 @@ def call_llm(system: str, user: str, temperature: float) -> str:
             {"role": "user", "content": user},
         ],
         temperature=temperature,
-        max_tokens=2500,
+        max_tokens=6000,
     )
     return completion.choices[0].message.content.strip()
 
@@ -84,7 +84,7 @@ def friendly_error(exc: Exception) -> str:
         return "Groq's rate limit was hit. Please wait a moment and try again."
     if "connection" in text or "timeout" in text or "network" in text:
         return "Couldn't reach Groq. Check your internet connection and try again."
-    return "Something went wrong while generating your plan. Please try again."
+    return f"Something went wrong while generating your plan. Please try again. (Details: {type(exc).__name__}: {str(exc)[:300]})"
 
 
 def build_user_prompt(
