@@ -202,14 +202,15 @@ def swap_exercise(plan: str, exercise: str, equipment: str, limitations: str = "
         return f"ERROR: {friendly_error(exc)}"
 
 
-def run_generation(inputs: dict, variation: bool) -> None:
+def run_generation(inputs: dict, variation: bool) -> bool:
     with st.spinner("Building your plan..."):
         result = generate_plan(**inputs, variation=variation)
     if result.startswith("ERROR:"):
         st.error(result.removeprefix("ERROR:").strip())
-    else:
-        st.session_state.plan = result
-        st.session_state.inputs = inputs
+        return False
+    st.session_state.plan = result
+    st.session_state.inputs = inputs
+    return True
 
 
 def main() -> None:
@@ -250,13 +251,12 @@ def main() -> None:
 
     st.markdown(plan)
     st.divider()
-
     saved = st.session_state.get("inputs", inputs)
     col1, col2 = st.columns(2)
     with col1:
         if st.button("🔄 Regenerate (new variation)", use_container_width=True):
-            run_generation(saved, variation=True)
-            st.rerun()
+            if run_generation(saved, variation=True):
+                st.rerun()
     with col2:
         st.download_button(
             "⬇️ Download as .md",
